@@ -1,5 +1,7 @@
 # 🧾 Receipts
 
+### *tokenmaxxing? keep the receipts.*
+
 See and share what you've done with Claude Code — a local dashboard (tokens,
 streak, hours saved, what's running now, date-range insights) plus
 screenshot-ready receipt cards and share links for Slack and Teams.
