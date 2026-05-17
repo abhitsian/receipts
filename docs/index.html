@@ -24,6 +24,9 @@
   .top { text-align:center; }
   .top h1 { font-size:23px; font-weight:700; letter-spacing:-0.02em; }
   .top p { color:var(--ink-faint); font-size:14px; margin-top:5px; }
+  .byline { color:var(--amber); font-size:13.5px; font-weight:600; margin-top:7px; letter-spacing:.2px; }
+  .about { max-width:430px; color:var(--ink-soft); font-size:13px; line-height:1.6; text-align:center; }
+  .about b { color:var(--ink); }
 
   /* receipt card */
   .receipt { width:340px; background:var(--paper); color:var(--paper-ink);
@@ -89,10 +92,17 @@
 <div class="wrap">
   <div class="top">
     <h1>🧾 Receipts</h1>
+    <div class="byline">tokenmaxxing? keep the receipts.</div>
     <p id="topSub">see what someone did with Claude Code</p>
   </div>
 
   <div id="cardSlot"></div>
+
+  <p class="about"><b>Tokenmaxxing</b> — the 2026 craze of burning AI tokens to look
+  productive — brought leaderboards, managers asking how many tokens you burned,
+  and a fast backlash. Receipts is the level-headed take: <b>keep the receipts.</b>
+  Monitor your usage, see what you actually spend tokens on, and show the work
+  behind the spend.</p>
 
   <div class="cta">
     <h2>Want your own?</h2>
