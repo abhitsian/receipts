@@ -78,6 +78,17 @@ def build_dashboard(receipts: list) -> dict:
     def active_dates(r):
         return {k.split(" ", 1)[0] for k in r.hourly}
 
+    def today_minutes(r):
+        """A multi-day session credits today with only the fraction of its
+        time-saved estimate that matches today's share of its tokens — so a
+        session left open for days doesn't dump its whole estimate into today."""
+        total = sum(r.hourly.values())
+        if total <= 0:
+            return r.minutes_saved
+        today_tok = sum(t for k, t in r.hourly.items()
+                        if k.split(" ", 1)[0] == today_str)
+        return r.minutes_saved * today_tok / total
+
     todays = [r for r in receipts if today_str in active_dates(r)]
     # "no code" celebrates *pure* non-code work only — a mixed session
     # touched code, so it doesn't count toward the recruiting metric.
@@ -125,7 +136,7 @@ def build_dashboard(receipts: list) -> dict:
             "hourly": hourly,
             "tasks": len(todays),
             "sessions": len(todays),
-            "minutes_saved": sum(r.minutes_saved for r in todays),
+            "minutes_saved": round(sum(today_minutes(r) for r in todays)),
             "noncode": today_noncode,
         },
         "streak": streak,
