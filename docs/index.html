@@ -28,56 +28,27 @@
   .about { max-width:430px; color:var(--ink-soft); font-size:13px; line-height:1.6; text-align:center; }
   .about b { color:var(--ink); }
 
-  /* cute token-burning animation */
-  .burn-scene { position:relative; width:100%; max-width:430px; height:100px;
-    margin:-10px 0 -14px; overflow:hidden; pointer-events:none; }
-  .fire { position:absolute; left:50%; bottom:12px; font-size:29px; line-height:1;
-    transform:translateX(-50%); animation:flicker .4s ease-in-out infinite alternate;
-    filter:drop-shadow(0 0 9px rgba(255,140,40,.55)); }
-  @keyframes flicker {
-    from { transform:translateX(-50%) scale(1) rotate(-5deg); }
-    to   { transform:translateX(-50%) scale(1.13) rotate(5deg); }
-  }
-  .bot { position:absolute; bottom:18px; left:40%; width:36px; height:34px;
-    animation:rove 3.6s ease-in-out infinite; }
-  .bot-b { position:absolute; left:0; right:0; top:4px; bottom:0;
-    border-radius:14px 14px 12px 12px; background:linear-gradient(165deg,#ffc079,#ed7d2a);
-    box-shadow:inset 0 -5px 7px rgba(150,60,0,.32); transform-origin:50% 100%;
-    animation:hop .62s ease-in-out infinite; }
-  .bot-b::before, .bot-b::after { content:""; position:absolute; top:9px; width:7px; height:7px;
-    border-radius:50%; background:#36200c; }
-  .bot-b::before { left:7px; } .bot-b::after { right:7px; }
-  .bot-smile { position:absolute; left:50%; top:17px; width:11px; height:6px;
-    border:2px solid #36200c; border-top:0; border-radius:0 0 11px 11px; transform:translateX(-50%); }
-  .bot-antenna { position:absolute; left:50%; top:-3px; width:2px; height:8px;
-    background:#ed7d2a; transform:translateX(-50%); }
-  .bot-antenna::after { content:""; position:absolute; top:-5px; left:-2.5px; width:7px; height:7px;
-    border-radius:50%; background:#ffd884; box-shadow:0 0 6px #ffb866; }
-  @keyframes hop {
-    0%,100% { transform:translateY(0) scale(1,1); }
-    22%     { transform:translateY(0) scale(1.16,.82); }
-    56%     { transform:translateY(-21px) scale(.9,1.12); }
-    82%     { transform:translateY(0) scale(1.14,.84); }
-  }
-  @keyframes rove { 0%,100% { left:12%; } 50% { left:68%; } }
-  .token { position:absolute; width:15px; height:15px; border-radius:50%;
-    background:radial-gradient(circle at 34% 30%,#ffe79a,#f0a93a 66%,#ba711b);
-    box-shadow:0 0 7px rgba(255,182,82,.8); will-change:transform; }
-  @keyframes tokenfall {
-    0%   { opacity:0; transform:translate(0,0) scale(.5) rotate(0deg); }
-    14%  { opacity:1; transform:translate(calc(var(--tx)*.14),calc(var(--ty)*.14)) scale(1) rotate(40deg); }
-    72%  { opacity:1; transform:translate(calc(var(--tx)*.84),calc(var(--ty)*.84)) scale(1) rotate(200deg); }
-    87%  { opacity:1; transform:translate(var(--tx),var(--ty)) scale(1.55) rotate(250deg); }
-    100% { opacity:0; transform:translate(var(--tx),var(--ty)) scale(.1) rotate(300deg); }
-  }
-  .spark { position:absolute; width:5px; height:5px; border-radius:50%;
-    background:#ffd27a; box-shadow:0 0 5px #ffae5a; will-change:transform; }
-  @keyframes sparkfly {
-    0%   { opacity:1; transform:translate(0,0) scale(1.3); }
-    100% { opacity:0; transform:translate(var(--sx),var(--sy)) scale(0); }
-  }
+  /* token-mazing — Claw'd loops the maze eating tokens, a ghost on its tail */
+  .maze { position:relative; margin:2px auto 4px; border-radius:10px;
+    overflow:hidden; background:#15110b;
+    box-shadow:0 0 0 1px #2b2317, 0 10px 24px rgba(0,0,0,.45); }
+  .wall { position:absolute; background:#2b2317; box-shadow:inset 0 0 0 1px #3d3122; }
+  .pellet { position:absolute; border-radius:50%;
+    background:radial-gradient(circle at 35% 32%,#ffe79a,#f0a93a 70%,#bd741c);
+    box-shadow:0 0 5px rgba(255,182,82,.75);
+    transition:transform .16s ease, opacity .16s ease; }
+  .pellet.eaten { transform:scale(0); opacity:0; }
+  .mover { position:absolute; left:0; top:0; width:22px; height:22px;
+    z-index:2; transition:transform .3s linear; will-change:transform; }
+  .mover svg { width:100%; height:100%; display:block;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.42)); }
+  .clawd-svg.nom { animation:nom .3s ease-in-out; }
+  @keyframes nom { 0%,100% { transform:scale(1); } 45% { transform:scale(1.16,.84); } }
+  .ghost-svg { animation:bob .55s ease-in-out infinite alternate; }
+  @keyframes bob { from { transform:translateY(0); } to { transform:translateY(-2.5px); } }
   @media (prefers-reduced-motion: reduce) {
-    .fire, .bot, .bot-b { animation:none; }
+    .mover { transition:none; }
+    .ghost-svg { animation:none; }
   }
 
   /* receipt card */
@@ -148,9 +119,39 @@
     <p id="topSub">see what someone did with Claude Code</p>
   </div>
 
-  <div class="burn-scene" id="burnScene">
-    <div class="fire">🔥</div>
-    <div class="bot"><div class="bot-antenna"></div><div class="bot-b"><div class="bot-smile"></div></div></div>
+  <div class="maze" id="maze">
+    <div class="mover" id="clawdPos">
+      <svg class="clawd-svg" viewBox="0 0 22 19" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#c87e5b">
+          <rect x="5" y="1" width="12" height="5"/>
+          <rect x="3" y="6" width="16" height="8"/>
+          <rect x="1" y="8" width="2" height="4"/>
+          <rect x="19" y="8" width="2" height="4"/>
+          <rect x="4" y="14" width="2" height="4"/>
+          <rect x="8" y="14" width="2" height="4"/>
+          <rect x="12" y="14" width="2" height="4"/>
+          <rect x="16" y="14" width="2" height="4"/>
+        </g>
+        <rect x="7" y="2" width="3" height="3" fill="#1c1712"/>
+        <rect x="12" y="2" width="3" height="3" fill="#1c1712"/>
+      </svg>
+    </div>
+    <div class="mover" id="ghostPos">
+      <svg class="ghost-svg" viewBox="0 0 14 15" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#9079c6">
+          <rect x="4" y="1" width="6" height="2"/>
+          <rect x="2" y="3" width="10" height="2"/>
+          <rect x="1" y="5" width="12" height="7"/>
+          <rect x="1" y="12" width="3" height="2"/>
+          <rect x="6" y="12" width="2" height="2"/>
+          <rect x="10" y="12" width="3" height="2"/>
+        </g>
+        <rect x="3" y="5" width="3" height="4" fill="#f4efe2"/>
+        <rect x="8" y="5" width="3" height="4" fill="#f4efe2"/>
+        <rect x="4" y="6" width="2" height="2" fill="#2a2230"/>
+        <rect x="9" y="6" width="2" height="2" fill="#2a2230"/>
+      </svg>
+    </div>
   </div>
 
   <div id="cardSlot"></div>
@@ -258,51 +259,79 @@ function buildCard(c){
   });
 })();
 
-// cute token-burning animation — the bot hops by a campfire, tokens fall in and poof
-(function burn(){
-  const scene=document.getElementById("burnScene");
-  if(!scene) return;
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+// token-mazing — Claw'd loops the maze gobbling tokens; a ghost chases, never quite catching
+(function maze(){
+  const host=document.getElementById("maze");
+  if(!host) return;
+  const CELL=22;
+  const MAP=[
+    "#############",
+    "#...........#",
+    "#.#########.#",
+    "#.#########.#",
+    "#.#########.#",
+    "#...........#",
+    "#############"
+  ];
+  const ROWS=MAP.length, COLS=MAP[0].length;
+  host.style.width=(COLS*CELL)+"px";
+  host.style.height=(ROWS*CELL)+"px";
 
-  function spawnSparks(x,y){
-    for(let i=0;i<5;i++){
-      const s=document.createElement("div");
-      s.className="spark";
-      s.style.left=(x-2.5)+"px";
-      s.style.top=(y-2.5)+"px";
-      s.style.setProperty("--sx",(Math.random()*44-22).toFixed(1)+"px");
-      s.style.setProperty("--sy",(-10-Math.random()*30).toFixed(1)+"px");
-      const d=0.5+Math.random()*0.35;
-      s.style.animation="sparkfly "+d.toFixed(2)+"s ease-out forwards";
-      scene.appendChild(s);
-      setTimeout(()=>s.remove(), d*1000+60);
+  const pellets={};
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(MAP[r][c]==="#"){
+      const w=document.createElement("div");
+      w.className="wall";
+      w.style.cssText=`left:${c*CELL}px;top:${r*CELL}px;width:${CELL}px;height:${CELL}px`;
+      host.insertBefore(w,host.firstChild);
+    } else {
+      const sz=6;
+      const p=document.createElement("div");
+      p.className="pellet";
+      p.style.cssText=`left:${c*CELL+(CELL-sz)/2}px;top:${r*CELL+(CELL-sz)/2}px;width:${sz}px;height:${sz}px`;
+      host.insertBefore(p,host.firstChild);
+      pellets[c+","+r]=p;
     }
   }
-  function spawnToken(){
-    const w=scene.clientWidth, h=scene.clientHeight;
-    if(!w) return;
-    const startX=18+Math.random()*(w-36);
-    const fireX=w/2, fireY=h-27;
-    const dur=1.5+Math.random()*0.5;
-    const t=document.createElement("div");
-    t.className="token";
-    t.style.left=startX+"px";
-    t.style.top="-15px";
-    t.style.setProperty("--tx",(fireX-startX-7.5).toFixed(1)+"px");
-    t.style.setProperty("--ty",(fireY+7.5).toFixed(1)+"px");
-    t.style.animation="tokenfall "+dur.toFixed(2)+"s cubic-bezier(.5,0,.7,1) forwards";
-    scene.appendChild(t);
-    // one timer per token; `done` makes the burn idempotent no matter what
-    let done=false;
-    setTimeout(()=>{
-      if(done) return;
-      done=true;
-      t.remove();
-      spawnSparks(fireX,fireY);
-    }, dur*1000);
+
+  // a clockwise loop around the ring corridor
+  const route=[];
+  for(let c=1;c<=11;c++) route.push([c,1]);
+  for(let r=2;r<=5;r++)  route.push([11,r]);
+  for(let c=10;c>=1;c--) route.push([c,5]);
+  for(let r=4;r>=2;r--)  route.push([1,r]);
+  const N=route.length;
+
+  const clawdPos=document.getElementById("clawdPos");
+  const ghostPos=document.getElementById("ghostPos");
+  const clawdSvg=clawdPos.querySelector("svg");
+  const GAP=7; // ghost stays a quarter-lap behind — close, but never catches
+
+  function moveTo(el,i){
+    const [c,r]=route[((i%N)+N)%N];
+    el.style.transform=`translate(${c*CELL}px,${r*CELL}px)`;
   }
-  spawnToken();
-  setInterval(spawnToken,900);
+  function eat(i){
+    const [c,r]=route[((i%N)+N)%N];
+    const p=pellets[c+","+r];
+    if(p && !p.classList.contains("eaten")){
+      p.classList.add("eaten");
+      clawdSvg.classList.remove("nom"); void clawdSvg.offsetWidth; clawdSvg.classList.add("nom");
+    }
+  }
+
+  let i=0;
+  moveTo(clawdPos,0); eat(0);
+  moveTo(ghostPos,-GAP);
+
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  setInterval(()=>{
+    i++;
+    if(i%N===0) for(const k in pellets) pellets[k].classList.remove("eaten"); // looped — refill
+    moveTo(clawdPos,i); eat(i);
+    moveTo(ghostPos,i-GAP);
+  },300);
 })();
 </script>
 </body>
