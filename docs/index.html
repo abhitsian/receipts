@@ -28,6 +28,58 @@
   .about { max-width:430px; color:var(--ink-soft); font-size:13px; line-height:1.6; text-align:center; }
   .about b { color:var(--ink); }
 
+  /* cute token-burning animation */
+  .burn-scene { position:relative; width:100%; max-width:430px; height:100px;
+    margin:-10px 0 -14px; overflow:hidden; pointer-events:none; }
+  .fire { position:absolute; left:50%; bottom:12px; font-size:29px; line-height:1;
+    transform:translateX(-50%); animation:flicker .4s ease-in-out infinite alternate;
+    filter:drop-shadow(0 0 9px rgba(255,140,40,.55)); }
+  @keyframes flicker {
+    from { transform:translateX(-50%) scale(1) rotate(-5deg); }
+    to   { transform:translateX(-50%) scale(1.13) rotate(5deg); }
+  }
+  .bot { position:absolute; bottom:18px; left:40%; width:36px; height:34px;
+    animation:rove 3.6s ease-in-out infinite; }
+  .bot-b { position:absolute; left:0; right:0; top:4px; bottom:0;
+    border-radius:14px 14px 12px 12px; background:linear-gradient(165deg,#ffc079,#ed7d2a);
+    box-shadow:inset 0 -5px 7px rgba(150,60,0,.32); transform-origin:50% 100%;
+    animation:hop .62s ease-in-out infinite; }
+  .bot-b::before, .bot-b::after { content:""; position:absolute; top:9px; width:7px; height:7px;
+    border-radius:50%; background:#36200c; }
+  .bot-b::before { left:7px; } .bot-b::after { right:7px; }
+  .bot-smile { position:absolute; left:50%; top:17px; width:11px; height:6px;
+    border:2px solid #36200c; border-top:0; border-radius:0 0 11px 11px; transform:translateX(-50%); }
+  .bot-antenna { position:absolute; left:50%; top:-3px; width:2px; height:8px;
+    background:#ed7d2a; transform:translateX(-50%); }
+  .bot-antenna::after { content:""; position:absolute; top:-5px; left:-2.5px; width:7px; height:7px;
+    border-radius:50%; background:#ffd884; box-shadow:0 0 6px #ffb866; }
+  @keyframes hop {
+    0%,100% { transform:translateY(0) scale(1,1); }
+    22%     { transform:translateY(0) scale(1.16,.82); }
+    56%     { transform:translateY(-21px) scale(.9,1.12); }
+    82%     { transform:translateY(0) scale(1.14,.84); }
+  }
+  @keyframes rove { 0%,100% { left:12%; } 50% { left:68%; } }
+  .token { position:absolute; width:15px; height:15px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#ffe79a,#f0a93a 66%,#ba711b);
+    box-shadow:0 0 7px rgba(255,182,82,.8); will-change:transform; }
+  @keyframes tokenfall {
+    0%   { opacity:0; transform:translate(0,0) scale(.5) rotate(0deg); }
+    14%  { opacity:1; transform:translate(calc(var(--tx)*.14),calc(var(--ty)*.14)) scale(1) rotate(40deg); }
+    72%  { opacity:1; transform:translate(calc(var(--tx)*.84),calc(var(--ty)*.84)) scale(1) rotate(200deg); }
+    87%  { opacity:1; transform:translate(var(--tx),var(--ty)) scale(1.55) rotate(250deg); }
+    100% { opacity:0; transform:translate(var(--tx),var(--ty)) scale(.1) rotate(300deg); }
+  }
+  .spark { position:absolute; width:5px; height:5px; border-radius:50%;
+    background:#ffd27a; box-shadow:0 0 5px #ffae5a; will-change:transform; }
+  @keyframes sparkfly {
+    0%   { opacity:1; transform:translate(0,0) scale(1.3); }
+    100% { opacity:0; transform:translate(var(--sx),var(--sy)) scale(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fire, .bot, .bot-b { animation:none; }
+  }
+
   /* receipt card */
   .receipt { width:340px; background:var(--paper); color:var(--paper-ink);
     font-family:"JetBrains Mono",monospace; filter:drop-shadow(0 18px 40px rgba(0,0,0,.55)); }
@@ -94,6 +146,11 @@
     <h1>🧾 Receipts</h1>
     <div class="byline">tokenmaxxing? keep the receipts.</div>
     <p id="topSub">see what someone did with Claude Code</p>
+  </div>
+
+  <div class="burn-scene" id="burnScene">
+    <div class="fire">🔥</div>
+    <div class="bot"><div class="bot-antenna"></div><div class="bot-b"><div class="bot-smile"></div></div></div>
   </div>
 
   <div id="cardSlot"></div>
@@ -199,6 +256,53 @@ function buildCard(c){
       navigator.clipboard.writeText(t).then(()=>{b.textContent="copied";setTimeout(()=>b.textContent="copy",1400);});
     };
   });
+})();
+
+// cute token-burning animation — the bot hops by a campfire, tokens fall in and poof
+(function burn(){
+  const scene=document.getElementById("burnScene");
+  if(!scene) return;
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  function spawnSparks(x,y){
+    for(let i=0;i<5;i++){
+      const s=document.createElement("div");
+      s.className="spark";
+      s.style.left=(x-2.5)+"px";
+      s.style.top=(y-2.5)+"px";
+      s.style.setProperty("--sx",(Math.random()*44-22).toFixed(1)+"px");
+      s.style.setProperty("--sy",(-10-Math.random()*30).toFixed(1)+"px");
+      const d=0.5+Math.random()*0.35;
+      s.style.animation="sparkfly "+d.toFixed(2)+"s ease-out forwards";
+      scene.appendChild(s);
+      setTimeout(()=>s.remove(), d*1000+60);
+    }
+  }
+  function spawnToken(){
+    const w=scene.clientWidth, h=scene.clientHeight;
+    if(!w) return;
+    const startX=18+Math.random()*(w-36);
+    const fireX=w/2, fireY=h-27;
+    const dur=1.5+Math.random()*0.5;
+    const t=document.createElement("div");
+    t.className="token";
+    t.style.left=startX+"px";
+    t.style.top="-15px";
+    t.style.setProperty("--tx",(fireX-startX-7.5).toFixed(1)+"px");
+    t.style.setProperty("--ty",(fireY+7.5).toFixed(1)+"px");
+    t.style.animation="tokenfall "+dur.toFixed(2)+"s cubic-bezier(.5,0,.7,1) forwards";
+    scene.appendChild(t);
+    // one timer per token; `done` makes the burn idempotent no matter what
+    let done=false;
+    setTimeout(()=>{
+      if(done) return;
+      done=true;
+      t.remove();
+      spawnSparks(fireX,fireY);
+    }, dur*1000);
+  }
+  spawnToken();
+  setInterval(spawnToken,900);
 })();
 </script>
 </body>
