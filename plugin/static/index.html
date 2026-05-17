@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts — what you did with Claude Code</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">🧾</span>
+    <div>
+      <h1>Receipts</h1>
+      <p class="tagline">what you actually did with Claude Code</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="namebox">
+      <span>@</span><input id="nameInput" placeholder="your name" maxlength="24">
+    </div>
+    <button id="todayReceiptBtn" class="btn-primary">🧾 Today's receipt</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-view="dashboard">Dashboard</button>
+  <button class="tab" data-view="insights">Insights</button>
+</nav>
+
+<main id="main">
+
+  <!-- ============ DASHBOARD ============ -->
+  <div id="viewDashboard">
+    <section id="runningStrip" class="running-strip hidden"></section>
+
+    <section class="hero">
+      <div class="stat" id="statTasks">
+        <div class="stat-label">Things done today</div>
+        <div class="stat-value">—</div>
+        <div class="stat-sub"></div>
+      </div>
+      <div class="stat" id="statSaved">
+        <div class="stat-label">Time saved today</div>
+        <div class="stat-value">—</div>
+        <div class="stat-sub">estimated</div>
+      </div>
+      <div class="stat" id="statStreak">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value">—</div>
+        <div class="stat-sub"></div>
+      </div>
+      <div class="stat token" id="statTokens">
+        <div class="stat-label">🔥 Tokens burned today</div>
+        <div class="stat-value">—</div>
+        <div class="stat-sub"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Burn rate</h2>
+        <span class="panel-note">tokens by hour · today</span>
+      </div>
+      <div id="hourlyChart" class="hourly-chart"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Last 14 days</h2>
+        <span class="panel-note" id="trendNote"></span>
+      </div>
+      <div id="trendChart" class="trend-chart"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Your receipts</h2>
+        <span class="panel-note">click any one to make a shareable card</span>
+      </div>
+      <div id="receiptList" class="receipt-list"></div>
+    </section>
+  </div>
+
+  <!-- ============ INSIGHTS ============ -->
+  <div id="viewInsights" class="hidden">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Where your tokens go</h2>
+        <div class="period-picker" id="periodPicker">
+          <button data-days="7">7d</button>
+          <button data-days="30" class="active">30d</button>
+          <button data-days="90">90d</button>
+          <button data-days="0">All</button>
+        </div>
+      </div>
+      <div class="ins-summary" id="insSummary"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Tokens over time</h2>
+        <span class="panel-note" id="insDailyNote"></span>
+      </div>
+      <div id="insDaily" class="daily-chart"></div>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <div class="panel-head">
+          <h2>By task type</h2>
+          <span class="panel-note">what you use Claude Code for</span>
+        </div>
+        <div id="insByTask" class="hbar-list"></div>
+      </div>
+      <div>
+        <div class="panel-head"><h2>By project</h2></div>
+        <div id="insByProject" class="hbar-list"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>When you burn tokens</h2>
+        <span class="panel-note">day × hour · darker = more</span>
+      </div>
+      <div id="insHeatmap" class="heatmap"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Code vs no-code</h2></div>
+      <div id="insCategory" class="split-bar"></div>
+      <div class="panel-head" style="margin-top:20px"><h2>By model</h2></div>
+      <div id="insModel" class="split-bar"></div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span id="footStats"></span>
+    <span class="foot-note">All local · reads ~/.claude/projects · nothing is sent anywhere</span>
+  </footer>
+
+</main>
+
+<!-- Receipt card modal -->
+<div id="modal" class="modal hidden">
+  <div class="modal-inner">
+    <div id="cardHost" class="card-host"></div>
+    <div class="modal-actions">
+      <button id="shareLinkBtn" class="btn-primary">🔗 Create share link</button>
+      <button id="copyImgBtn" class="btn-primary">📋 Copy as image</button>
+      <button id="copyTxtBtn" class="btn-ghost">Copy as text</button>
+      <button id="dlBtn" class="btn-ghost">Download PNG</button>
+      <button id="closeBtn" class="btn-ghost">Close</button>
+    </div>
+    <p class="modal-hint">✏️ Tap the headline or any underlined text to edit — scrub anything sensitive first. <b>Create share link</b> gives you a URL anyone can open to see this card and install Receipts; <b>Copy as image</b> pastes into Slack or Teams.</p>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

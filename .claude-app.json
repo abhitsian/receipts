@@ -1,0 +1,9 @@
+{
+  "name": "Receipts",
+  "type": "python",
+  "entry": "plugin/app.py",
+  "port": 4830,
+  "open": "http://localhost:4830",
+  "install": "python3.13 -m venv plugin/.venv && plugin/.venv/bin/pip install -r plugin/requirements.txt",
+  "description": "Track and share what you actually did with Claude Code — tokens, streaks, hours saved, and brag-worthy receipt cards built for Slack and Teams."
+}

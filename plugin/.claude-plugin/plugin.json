@@ -1,0 +1,9 @@
+{
+  "name": "receipts",
+  "description": "Track and share what you've done with Claude Code — a local dashboard (tokens, streaks, hours saved, what's running now) plus screenshot-ready receipt cards for Slack and Teams.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Abhishek Sivaraman"
+  },
+  "keywords": ["claude-code", "usage", "tokens", "dashboard", "productivity"]
+}

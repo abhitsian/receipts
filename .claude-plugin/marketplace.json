@@ -1,0 +1,13 @@
+{
+  "name": "receipts",
+  "owner": {
+    "name": "Abhishek Sivaraman"
+  },
+  "plugins": [
+    {
+      "name": "receipts",
+      "source": "./plugin",
+      "description": "See and share what you've done with Claude Code — a local dashboard plus shareable receipt cards."
+    }
+  ]
+}
