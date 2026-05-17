@@ -209,9 +209,8 @@ function buildCard(c) {
       ${badge}
       ${notes}
       <div class="r-foot">${c.foot}</div>
-      <div class="r-foot-sub">claude.com/code</div>
-      <div class="r-barcode"></div>
-      <div class="r-barcode-num">${c.barcode}</div>
+      <img class="r-qr" src="/static/qr.png" alt="QR code — scan to get Receipts">
+      <div class="r-qr-cap">SCAN TO GET RECEIPTS · FREE</div>
     </div>
     <div class="zig bottom"></div>
   </div>`;

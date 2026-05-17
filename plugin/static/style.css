@@ -279,16 +279,12 @@ body {
   text-align: center; font-size: 11px; color: #6f6446;
   letter-spacing: 1px; margin-top: 2px;
 }
-.r-barcode {
-  height: 34px; margin-top: 13px;
-  background: repeating-linear-gradient(90deg,
-    var(--paper-ink) 0 2px, transparent 2px 4px,
-    var(--paper-ink) 4px 7px, transparent 7px 9px,
-    var(--paper-ink) 9px 10px, transparent 10px 13px);
+.r-qr {
+  display: block; width: 136px; height: 136px; margin: 14px auto 5px;
 }
-.r-barcode-num {
-  text-align: center; font-size: 10px; letter-spacing: 3px;
-  color: #6f6446; margin-top: 4px;
+.r-qr-cap {
+  text-align: center; font-size: 9.5px; letter-spacing: 2px;
+  color: #6f6446;
 }
 
 /* ---- toast ---- */
