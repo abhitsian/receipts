@@ -72,14 +72,28 @@ def build_dashboard(receipts: list) -> dict:
             if day == today_str:
                 hourly[int(hr)] += tok
 
-    todays = [r for r in receipts if r.start.date() == today]
+    # A session counts toward a day if it had token activity that day — not
+    # only if it started that day. A long session resumed across several days
+    # is real work on each of those days. `r.hourly` keys are "YYYY-MM-DD HH".
+    def active_dates(r):
+        return {k.split(" ", 1)[0] for k in r.hourly}
+
+    todays = [r for r in receipts if today_str in active_dates(r)]
     # "no code" celebrates *pure* non-code work only — a mixed session
     # touched code, so it doesn't count toward the recruiting metric.
     today_noncode = sum(1 for r in todays if r.category == "non-code")
 
-    # Streak — consecutive days with at least one session, ending today
-    # (or yesterday, if today hasn't started yet).
-    active_days = {r.start.date() for r in receipts}
+    # Streak — consecutive days with activity, ending today (or yesterday,
+    # if today hasn't started yet).
+    active_days = set()
+    day_sessions: dict = {}
+    for r in receipts:
+        for ds in active_dates(r):
+            day_sessions[ds] = day_sessions.get(ds, 0) + 1
+            try:
+                active_days.add(date.fromisoformat(ds))
+            except ValueError:
+                pass
     streak = 0
     cur = today if today in active_days else today - timedelta(days=1)
     while cur in active_days:
@@ -87,10 +101,6 @@ def build_dashboard(receipts: list) -> dict:
         cur -= timedelta(days=1)
 
     # 14-day trend.
-    day_sessions: dict = {}
-    for r in receipts:
-        d = r.start.date().isoformat()
-        day_sessions[d] = day_sessions.get(d, 0) + 1
     trend = []
     for i in range(13, -1, -1):
         d = today - timedelta(days=i)
