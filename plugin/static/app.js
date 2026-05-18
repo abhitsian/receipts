@@ -176,6 +176,43 @@ function barcodeNum(seed) {
   return (seed || "").replace(/[^a-z0-9]/gi, "").slice(0, 14).toUpperCase().padEnd(14, "0");
 }
 
+// Absurd receipt footers, riffing on Claude Code's between-message spinner words.
+const QUIPS = [
+  "thank you for tokenmaxxing responsibly",
+  "freshly percolated — enjoy",
+  "no splines were reticulated in vain",
+  "100% organic, free-range noodling",
+  "discombobulated with care",
+  "honk if you tokenmaxx",
+  "may contain traces of pondering",
+  "schlepped to you with love",
+  "marinated for your convenience",
+  "wizarding complete — tip your agent",
+  "officially bamboozled (affectionately)",
+  "vibing since 2026",
+  "ruminating sold separately",
+  "flibbertigibbeting included, no charge",
+  "thank you for letting Claude cook",
+  "frolicking guaranteed or tokens back",
+  "this receipt mosied over",
+  "powered by pure shimmying",
+  "side effects may include philosophising",
+  "incubated, hatched, shipped",
+  "your neighbourhood conjuring service",
+  "we spelunked your codebase, found snacks",
+  "smooshed with intent",
+  "transmuted from raw tokens — no MSG",
+  "cogitating… done",
+  "aggressively unfurled, just for you",
+];
+function randomQuip() {
+  return QUIPS[Math.floor(Math.random() * QUIPS.length)];
+}
+function loyaltyLine(streak) {
+  const stars = "⭐".repeat(Math.min(5, Math.max(1, Math.ceil(streak / 4))));
+  return `${stars} ${streak}-DAY`;
+}
+
 function buildCard(c) {
   const lines = c.lines.map(
     ([k, v]) => `<div class="r-line"><span>${k}</span><span>${v}</span></div>`
@@ -219,6 +256,7 @@ function buildCard(c) {
 function openSessionCard(r) {
   // Headline pre-fills from the title — a one-liner, not the raw prompt —
   // and is editable on the card so anything sensitive can be scrubbed.
+  const streak = (DATA && DATA.streak) || 0;
   showCard({
     date: cardDate(r.start),
     item: r.title,
@@ -227,13 +265,14 @@ function openSessionCard(r) {
       ["TOOL CALLS", r.tool_count],
       ["TOKENS", fmtTokens(r.total_tokens)],
       ["MODEL", r.model],
+      ...(streak ? [["LOYALTY", loyaltyLine(streak)]] : []),
     ],
     built: r.files_created.length ? r.files_created.join(", ") : "",
     saved: fmtMins(r.minutes_saved).replace("~", "").toUpperCase(),
-    badge: r.category === "non-code" ? "✨ NO CODE NEEDED ✨" : "",
+    badge: "",
     notesLabel: "",
     notesText: "",
-    foot: "you can do this too →",
+    foot: randomQuip(),
     barcode: barcodeNum(r.id),
   });
 }
@@ -245,20 +284,22 @@ function openTodayCard() {
   const todays = DATA.receipts.filter((r) => r.start.slice(0, 10) === todayStr);
   const lineup = todays.slice(0, 6)
     .map((r) => `• ${r.title}`).join("\n") || "—";
+  const streak = (DATA && DATA.streak) || 0;
   showCard({
     date: cardDate(new Date().toISOString()),
     item: `${t.tasks} thing${t.tasks === 1 ? "" : "s"} done today`,
     lines: [
-      ["NEEDED NO CODE", `${t.noncode} of ${t.tasks}`],
+      ["THINGS DONE", t.tasks],
       ["SESSIONS", t.sessions],
       ["TOKENS BURNED", fmtTokens(t.tokens)],
+      ...(streak ? [["LOYALTY", loyaltyLine(streak)]] : []),
     ],
     built: "",
     saved: fmtMins(t.minutes_saved).replace("~", "").toUpperCase(),
-    badge: t.noncode > 0 ? `✨ ${t.noncode} DONE WITHOUT CODE ✨` : "",
+    badge: "",
     notesLabel: "WHAT I DID",
     notesText: lineup,
-    foot: "your turn →",
+    foot: randomQuip(),
     barcode: barcodeNum(todayStr + displayName()),
   });
 }
